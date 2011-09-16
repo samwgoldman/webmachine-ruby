@@ -5,6 +5,7 @@ source :rubygems
 gemspec
 
 gem 'bundler'
+gem 'eventmachine', '~>1.0.0.beta'
 
 unless ENV['TRAVIS']
   gem 'guard-rspec'

@@ -5,5 +5,6 @@ module Webmachine
   # application servers.
   module Adapters
     autoload :Mongrel, 'webmachine/adapters/mongrel'
+    autoload :EventMachine, 'webmachine/adapters/eventmachine'
   end
 end
