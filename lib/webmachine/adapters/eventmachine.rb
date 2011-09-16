@@ -14,11 +14,10 @@ module Webmachine
       def self.run
         c = Webmachine.configuration
         trap("INT"){ ::EventMachine::stop_event_loop }
-        Thread.new {
-          ::EventMachine::run {
-            ::EventMachine.start_server c.ip, c.port, Server
-          } 
-        }.join
+
+        ::EventMachine::run {
+          ::EventMachine.start_server c.ip, c.port, Server
+        }
       end
 
       module Server
