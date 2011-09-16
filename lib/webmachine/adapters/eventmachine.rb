@@ -43,6 +43,8 @@ module Webmachine
             })
 
             r.status = response.code.to_i
+            r.header.replace response.headers
+            r.header["Server"] = Webmachine::SERVER_STRING
             r.body = response.body
 
             send_data r
