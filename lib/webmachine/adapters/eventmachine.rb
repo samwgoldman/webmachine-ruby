@@ -16,29 +16,27 @@ module Webmachine
         trap("INT"){ ::EventMachine::stop_event_loop }
 
         ::EventMachine::run {
-          ::EventMachine.start_server c.ip, c.port, Server
+          ::EventMachine.start_server c.ip, c.port, HttpServer
         }
       end
 
-      module Server
+      module HttpServer
         def post_init
           puts "-- someone connected to the server!"
-        end
 
-        def receive_data data
-          parser = ::Http::Parser.new
-
-          parser.on_message_complete = proc do |env|
-            request = Webmachine::Request.new(parser.http_method,
-                                            URI.parse(parser.request_url),
-                                            parser.headers,
-                                            StringIO.new(''))
+          @parser = ::Http::Parser.new
+          @parser.on_body = proc { |chunk| @body << chunk }
+          @parser.on_message_complete = proc do
+            request = Webmachine::Request.new(@parser.http_method,
+                                            URI.parse(@parser.request_url),
+                                            @parser.headers,
+                                            @body || StringIO.new(''))
 
             response = Webmachine::Response.new
             Webmachine::Dispatcher.dispatch(request, response)
 
             r = ::WEBrick::HTTPResponse.new({
-              :HTTPVersion => parser.http_version.join('.')
+              :HTTPVersion => @parser.http_version.join('.')
             })
 
             r.status = response.code.to_i
@@ -48,8 +46,10 @@ module Webmachine
 
             send_data r
           end
+        end
 
-          parser << data
+        def receive_data data
+          @parser << data
         end
 
         def unbind
