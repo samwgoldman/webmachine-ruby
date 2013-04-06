@@ -20,7 +20,7 @@ shared_examples_for :adapter_lint do
     @client = Net::HTTP.new(configuration.ip, configuration.port)
 
     Thread.abort_on_exception = true
-    Thread.new { @adapter.run }
+    @server_thread = Thread.new { @adapter.run }
 
     # Wait until the server is responsive
     timeout(5) do
@@ -36,6 +36,7 @@ shared_examples_for :adapter_lint do
   after(:all) do
     @adapter.shutdown
     @client.finish
+    @server_thread.join
   end
 
   it "provides a string-like request body" do
