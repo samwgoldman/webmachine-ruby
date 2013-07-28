@@ -84,8 +84,32 @@ module Webmachine
                       end
                     end
 
-        rack_res = ::Rack::Response.new(rack_body, rack_status, rack_headers)
+        rack_res = RackResponse.new(rack_body, rack_status, rack_headers)
         rack_res.finish
+      end
+
+      class RackResponse
+        def initialize(body, status, headers)
+          @body    = body
+          @status  = status
+          @headers = headers
+        end
+
+        def finish
+          @headers['Content-Type'] ||= 'text/html' if rack_release_enforcing_content_type
+          @headers.delete('Content-Type')          if response_without_body
+          [@status, @headers, @body]
+        end
+
+        protected
+
+        def response_without_body
+          ::Rack::Utils::STATUS_WITH_NO_ENTITY_BODY.include? @status
+        end
+
+        def rack_release_enforcing_content_type
+          ::Rack.release < '1.5'
+        end
       end
 
       # Wraps the Rack input so it can be treated like a String or
